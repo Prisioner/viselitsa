@@ -1,13 +1,10 @@
 class WordReader
-  def read_from_file(file_name)
+  def self.read_from_file(file_name)
     begin
-      f = File.new(file_name, 'r:UTF-8')
+      File.readlines(file_name, encoding: 'UTF-8').sample.chomp
     rescue SystemCallError
       puts "Файл со словами отсутствует"
       exit
     end
-    lines = f.readlines
-    f.close
-    lines.sample.chomp
   end
 end

@@ -1,21 +1,26 @@
 class Game
   attr_reader :letters, :good_letters, :bad_letters, :status, :errors
+  attr_accessor :version
   ERRORS_LIMIT = 7
 
-  def initialize(slovo)
-    @letters = get_letters(slovo)
+  def initialize(word)
+    @letters = get_letters(word)
     @errors = 0
     @good_letters = []
     @bad_letters = []
-    @status = 0
+
+    # :in_progress - игра в процессе
+    # :won - победа
+    # :lost - поражение
+    @status = :in_progress
   end
 
-  def get_letters(slovo)
-    if (slovo == nil || slovo == "")
+  def get_letters(word)
+    if word.nil? || word == ""
       puts "Вы не ввели слово для игры"
       exit
     end
-    slovo.upcase.split("")
+    word.upcase.split("")
   end
 
   # 1. спросить букву с консоли
@@ -29,21 +34,43 @@ class Game
     next_step(letter)
   end
 
+  def next_step(letter)
+    return unless in_progress?
+    return if repeated?(letter)
+    if good_letter?(letter)
+      add_letter(letter, @good_letters)
+      @status = :won if won?
+    else
+      add_letter(letter, @bad_letters)
+      @errors += 1
+      @status = :lost if lost?
+    end
+  end
+
+  def in_progress?
+    @status == :in_progress
+  end
+
+  # Проверяет, не повторяется ли буква с уже названными
+  def repeated?(letter)
+    @good_letters.include?(letter) || @bad_letters.include?(letter)
+  end
+
   # Метод проверяет наличие буквы в загаданном слове
-  def good_letter?(bukva)
-    case bukva
+  def good_letter?(letter)
+    case letter
       when "Е","Ё"
         ["Е","Ё"].any?{ |letter| @letters.include?(letter) }
       when "И","Й"
         ["И","Й"].any?{ |letter| @letters.include?(letter) }
       else
-        @letters.include?(bukva)
+        @letters.include?(letter)
     end
   end
 
   # Добавляем букву в массив
-  def add_letter(bukva, some_letters)
-    case bukva
+  def add_letter(letter, some_letters)
+    case letter
       when "Е","Ё"
         some_letters << "Е"
         some_letters << "Ё"
@@ -51,37 +78,19 @@ class Game
         some_letters << "И"
         some_letters << "Й"
       else
-        some_letters << bukva
+        some_letters << letter
     end
   end
 
-  # Проверяет, не повторяется ли буква с уже названными
-  def repeated?(bukva)
-    @good_letters.include?(bukva) || @bad_letters.include?(bukva)
+  def won?
+    @status == :won || (@letters - @good_letters).empty?
   end
 
-  def win?
-    (@letters - @good_letters).empty?
+  def lost?
+    @status == :lost || @errors >= ERRORS_LIMIT
   end
 
-  def lose?
-    @errors >= ERRORS_LIMIT
-  end
-
-  def atempts
+  def atempts_left
     ERRORS_LIMIT - @errors
-  end
-
-  def next_step(bukva)
-    return if @status == -1 || @status == 1
-    return if repeated?(bukva)
-    if good_letter?(bukva)
-      add_letter(bukva, @good_letters)
-      @status = 1 if win?
-    else
-      add_letter(bukva, @bad_letters)
-      @errors += 1
-      @status = -1 if lose?
-    end
   end
 end
