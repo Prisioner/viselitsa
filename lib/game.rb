@@ -1,3 +1,5 @@
+require 'unicode_utils'
+
 class Game
   attr_reader :letters, :good_letters, :bad_letters, :status, :errors
   attr_accessor :version
@@ -20,7 +22,7 @@ class Game
       puts "Вы не ввели слово для игры"
       exit
     end
-    word.upcase.split("")
+    UnicodeUtils.upcase(word).split("")
   end
 
   # 1. спросить букву с консоли
@@ -29,7 +31,7 @@ class Game
     puts "\n Введите следующую букву:"
     letter = ""
     while letter == "" do
-      letter = STDIN.gets.chomp.upcase
+      letter = UnicodeUtils.upcase(STDIN.gets.chomp)
     end
     next_step(letter)
   end
